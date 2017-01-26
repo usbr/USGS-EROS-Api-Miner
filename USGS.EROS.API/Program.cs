@@ -26,9 +26,11 @@ namespace USGS.EROS.API
         static List<string> erosDatasets = new List<string>() { "LANDSAT_8", "LANDSAT_ETM_SLC_OFF" };
         static List<int> erosPaths; //= new List<int>() { 38, 39 };
         static List<int> erosRows;  // = new List<int>() { 36, 37 };
+        static List<double> lowerLeftCoordinates; //= new List<double>() { 33, -115.5 };
+        static List<double> upperRightCoordinates; //= new List<double>() { 35, -113.5 };
         static bool download, inventory;
 
-        static bool jrDEBUG = true;
+        static bool jrDEBUG = false;
         static string fileName = "";
 
         public static string ibr3LandsatFolder;// = @"G:\AutoDownloads\";
@@ -52,12 +54,15 @@ namespace USGS.EROS.API
                 argList[4] = "--pass=XXXXX";
                 argList[5] = "--paths=38,39";
                 argList[6] = "--rows=36,37";
+                argList[7] = "--lowerleft=33,-115.5";
+                argList[8] = "--upperright=35,-113.5";
             }
 
             Arguments args = new Arguments(argList);
 
             if (argList.Length == 0 || !args.Contains("t1") || !args.Contains("t2") || !args.Contains("user") || 
-                !args.Contains("pass") || !args.Contains("paths") || !args.Contains("rows"))
+                !args.Contains("pass") || !args.Contains("paths") || !args.Contains("rows") ||
+                !args.Contains("lowerleft") || !args.Contains("upperright"))
             {
                 ShowHelp();
                 return;
@@ -69,10 +74,12 @@ namespace USGS.EROS.API
                 erosPswd = args["pass"].ToString();
                 erosPaths = args["paths"].Split(',').Select(Int32.Parse).ToList();
                 erosRows = args["rows"].Split(',').Select(Int32.Parse).ToList();
+                lowerLeftCoordinates = args["lowerleft"].Split(',').Select(double.Parse).ToList();
+                upperRightCoordinates = args["upperright"].Split(',').Select(double.Parse).ToList();
                 if (args.Contains("download"))
                 {
                     download = true;
-                    ibr3LandsatFolder = args["rows"].ToString();
+                    ibr3LandsatFolder = args["download"].ToString();
                 }
                 if (args.Contains("inventory"))
                 {
@@ -233,8 +240,8 @@ namespace USGS.EROS.API
             // Define API process request
             var request = new RestRequest("search?jsonRequest={" +
                             @"""datasetName"":""" + erosDatasetName + @"""," +
-                            @"""lowerLeft"":{ ""latitude"":""33"",""longitude"":""-115.5""}," +
-                            @"""upperRight"":{ ""latitude"":""35"",""longitude"":""-113.5""}," +
+                            @"""lowerLeft"":{ ""latitude"":""" + lowerLeftCoordinates[0] + @""",""longitude"":""" + lowerLeftCoordinates[1] + @"""}," +
+                            @"""upperRight"":{ ""latitude"":""" + upperRightCoordinates[0] + @""",""longitude"":""" + upperRightCoordinates[1] + @"""}," +
                             @"""startDate"":""" + t1.ToString("yyyy-MM-dd") + @"""," +
                             @"""endDate"":""" + t2.ToString("yyyy-MM-dd") + @"""," +
                             @"""includeUnknownCloudCover"":true," +
@@ -434,6 +441,10 @@ namespace USGS.EROS.API
             Console.WriteLine("      downloads found files automatically");
             Console.WriteLine("--inventory=[X]");
             Console.WriteLine("      prints found files in a csv file named [X]");
+            Console.WriteLine("--lowerleft=[X1,X2]");
+            Console.WriteLine("      lower left spatial coordinates of search boundaries in decimal degrees");
+            Console.WriteLine("--upperright=[X1,X2]");
+            Console.WriteLine("      upper right spatial coordinates of search boundaries in decimal degrees");
             Console.WriteLine("--paths=[X1,X2,...Xn]");
             Console.WriteLine("      Scene Paths to search for");
             Console.WriteLine("--rows=[X1,X2,...Xn]");
@@ -446,7 +457,7 @@ namespace USGS.EROS.API
             Console.WriteLine("      or either today or yesterday and t1 < t2");
             Console.WriteLine();
             Console.WriteLine("Sample Usage:");
-            Console.WriteLine(@"ErosMiner --user=jrocha@usbr.gov --pass=XXXXX --download=G:\AutoDownloads\ --paths=38,39 --rows=36,37 --t1=2016-01-01 --t2=yesterday");
+            Console.WriteLine(@"ErosMiner --user=jrocha@usbr.gov --pass=XXXXX --download=G:\AutoDownloads\ --lowerleft=33,-115.5 --upperright=35-113.5 --paths=38,39 --rows=36,37 --t1=2016-01-01 --t2=yesterday");
             Console.WriteLine("");
             Console.WriteLine("Press any key to continue... ");
             Console.ReadLine();
