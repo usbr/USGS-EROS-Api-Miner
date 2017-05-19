@@ -23,7 +23,7 @@ namespace USGS.EROS.API
         static string erosNode = "EE";
         static string erosProduct = "STANDARD";
         static DateTime t1, t2;
-        static List<string> erosDatasets = new List<string>() { "LANDSAT_8", "LANDSAT_ETM_SLC_OFF" };
+        static List<string> erosDatasets;// = new List<string>() { "LANDSAT_8_C1", "LANDSAT_ETM_C1" };
         static List<int> erosPaths; //= new List<int>() { 38, 39 };
         static List<int> erosRows;  // = new List<int>() { 36, 37 };
         static List<double> lowerLeftCoordinates; //= new List<double>() { 33, -115.5 };
@@ -44,25 +44,26 @@ namespace USGS.EROS.API
         {
             if (jrDEBUG)
             {
-                argList = new string[7];
+                argList = new string[10];
                 // Set search period t1 to t2
-                argList[0] = "--t1=" + new DateTime(2017, 1, 1).ToString();
+                argList[0] = "--t1=" + new DateTime(2017, 5, 1).ToString();
                 argList[1] = "--t2=" + DateTime.Now.ToString();
                 argList[2] = "--inventory=MyFile";
-                argList[2] = @"--download=G:\AutoDownloads\";
+                //argList[2] = @"--download=G:\AutoDownloads\";
                 argList[3] = "--user=jrocha@usbr.gov";
                 argList[4] = "--pass=XXXXX";
                 argList[5] = "--paths=38,39";
                 argList[6] = "--rows=36,37";
                 argList[7] = "--lowerleft=33,-115.5";
                 argList[8] = "--upperright=35,-113.5";
+                argList[9] = "--datasetnames=LANDSAT_8_C1,LANDSAT_ETM_C1";
             }
 
             Arguments args = new Arguments(argList);
 
             if (argList.Length == 0 || !args.Contains("t1") || !args.Contains("t2") || !args.Contains("user") || 
                 !args.Contains("pass") || !args.Contains("paths") || !args.Contains("rows") ||
-                !args.Contains("lowerleft") || !args.Contains("upperright"))
+                !args.Contains("lowerleft") || !args.Contains("upperright") || !args.Contains("datasetnames"))
             {
                 ShowHelp();
                 return;
@@ -70,6 +71,7 @@ namespace USGS.EROS.API
             else
             {
                 SetupDates(args, out t1, out t2);
+                erosDatasets = args["datasetnames"].Split(',').ToList();
                 erosUser = args["user"].ToString();
                 erosPswd = args["pass"].ToString();
                 erosPaths = args["paths"].Split(',').Select(Int32.Parse).ToList();
@@ -437,6 +439,9 @@ namespace USGS.EROS.API
             Console.WriteLine("      with [X] as the user's username");
             Console.WriteLine("--pass=[X]");
             Console.WriteLine("      with [X] as the user's password");
+            Console.WriteLine("--datasetnames=[X1,X2,...Xn]");
+            Console.WriteLine("      Valid EROS API dataset names from ");
+            Console.WriteLine(@"      API/json/datasets?jsonRequest={""apiKey"": ""X"",""node"": ""EE""}");
             Console.WriteLine("--download");
             Console.WriteLine("      downloads found files automatically");
             Console.WriteLine("--inventory=[X]");
@@ -457,7 +462,7 @@ namespace USGS.EROS.API
             Console.WriteLine("      or either today or yesterday and t1 < t2");
             Console.WriteLine();
             Console.WriteLine("Sample Usage:");
-            Console.WriteLine(@"ErosMiner --user=jrocha@usbr.gov --pass=XXXXX --download=G:\AutoDownloads\ --lowerleft=33,-115.5 --upperright=35-113.5 --paths=38,39 --rows=36,37 --t1=2016-01-01 --t2=yesterday");
+            Console.WriteLine(@"ErosMiner --user=jrocha@usbr.gov --pass=XXXXX --datasetnames=LANDSAT_8_C1,LANDSAT_ETM_C1 --download=G:\AutoDownloads\ --lowerleft=33,-115.5 --upperright=35-113.5 --paths=38,39 --rows=36,37 --t1=2016-01-01 --t2=yesterday");
             Console.WriteLine("");
             Console.WriteLine("Press any key to continue... ");
             Console.ReadLine();
