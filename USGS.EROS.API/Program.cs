@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -42,16 +43,21 @@ namespace USGS.EROS.API
         /// <param name="args"></param>
         static void Main(string[] argList)
         {
+            // USGS API changed security settings 7/27/2017
+            // Error:  Could not create ssl tls secure channel
+            // Fix: https://stackoverflow.com/questions/32994464/could-not-create-ssl-tls-secure-channel-despite-setting-servercertificatevalida
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+
             if (jrDEBUG)
             {
                 argList = new string[10];
                 // Set search period t1 to t2
                 argList[0] = "--t1=" + new DateTime(2017, 5, 1).ToString();
                 argList[1] = "--t2=" + DateTime.Now.ToString();
-                argList[2] = "--inventory=MyFile";
-                //argList[2] = @"--download=G:\AutoDownloads\";
+                //argList[2] = "--inventory=MyFile";
+                argList[2] = @"--download=C:\Users\jrocha\Desktop\";
                 argList[3] = "--user=jrocha@usbr.gov";
-                argList[4] = "--pass=XXXXX";
+                argList[4] = "--pass=XXXX";
                 argList[5] = "--paths=38,39";
                 argList[6] = "--rows=36,37";
                 argList[7] = "--lowerleft=33,-115.5";
