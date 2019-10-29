@@ -16,7 +16,7 @@ namespace USGS.EROS.API
     class Program
     {
         // Global variables
-        static string erosSrvr = @"https://earthexplorer.usgs.gov/inventory/json/";
+        static string erosSrvr = @"https://earthexplorer.usgs.gov/inventory/json/v/stable/";
         static RestClient erosClient = new RestClient(erosSrvr);
         static string erosUser;     //= ConfigurationSettings.AppSettings["UserName"].ToString();
         static string erosPswd;     // = ConfigurationSettings.AppSettings["Password"].ToString();
@@ -57,7 +57,7 @@ namespace USGS.EROS.API
                 //argList[2] = "--inventory=MyFile";
                 argList[2] = @"--download=C:\Users\jrocha\Desktop\";
                 argList[3] = "--user=jrocha@usbr.gov";
-                argList[4] = "--pass=XXXX";
+                argList[4] = "--pass=******";
                 argList[5] = "--paths=38,39";
                 argList[6] = "--rows=36,37";
                 argList[7] = "--lowerleft=33,-115.5";
@@ -212,10 +212,18 @@ namespace USGS.EROS.API
         private static void Connect()
         {
             // Define API process request
-            var request = new RestRequest("login?jsonRequest={" +
+            //var request = new RestRequest("login?jsonRequest={" +
+            //                @"""catalogId"":""EE""," +
+            //                @"""username"":""" + erosUser + @"""," +
+            //                @"""password"":""" + erosPswd + @"""}", 
+            //                Method.POST);
+
+            var request = new RestRequest("login?", Method.POST);
+            string requestString = "{" +
+                            @"""catalogId"":""EE""," +
                             @"""username"":""" + erosUser + @"""," +
-                            @"""password"":""" + erosPswd + @"""}", 
-                            Method.POST);
+                            @"""password"":""" + erosPswd + @"""}";
+            request.AddParameter("jsonRequest", requestString);
 
             // Execute the request and get authentication token
             IRestResponse apiResponse = erosClient.Execute(request);
